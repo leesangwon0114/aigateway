@@ -32,6 +32,7 @@ const getVoice2Text = (call) => {
   const encoding = 'LINEAR16';
   const sampleRateHertz = 16000;
   const languageCode = 'ko-KR'; //en-US
+  var stt_data = null;
 
   const request = {
       config: {
@@ -41,7 +42,8 @@ const getVoice2Text = (call) => {
           profanityFilter: false,
           enableWordTimeOffsets: true
       },
-      interimResults: true // If you want interim results, set this to true
+      interimResults: true, // If you want interim results, set this to true
+      singleUtterance: true
   };
 
   call.on('data', (data)=> {
@@ -76,15 +78,20 @@ const getVoice2Text = (call) => {
         .on('error', console.error)
         .on('data', (data) => {
           //console.log('stream data');
-          //console.log(data);
-          call.write({resultCd:200, recognizedText:data.results[0].alternatives[0].transcript})
-          // if end of utterance, let's restart stream
-          // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
-          if (data.results[0] && data.results[0].isFinal) {
-            call.write({resultCd:201, recognizedText:data.results[0].alternatives[0].transcript})
+          console.log(data);
+          if (data.speechEventType == "END_OF_SINGLE_UTTERANCE") {
+            call.write({resultCd:201, recognizedText:stt_data})
             stopRecognitionStream();
-            //startRecognitionStream(client);
-            // console.log('restarted stream serverside');
+            call.end();
+          } else {
+            stt_data = data.results[0].alternatives[0].transcript;
+            call.write({resultCd:200, recognizedText:stt_data})
+            // if end of utterance, let's restart stream
+            // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
+            //if (data.results[0] && data.results[0].isFinal) {
+            //  call.write({resultCd:201, recognizedText:data.results[0].alternatives[0].transcript})
+            //  stopRecognitionStream();
+            //}
           }
         });
   }
