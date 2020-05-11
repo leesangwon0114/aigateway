@@ -352,7 +352,7 @@ async function imageClassificationWithImage() {
     const initializeElements = () => {
       document.getElementById('load_button').addEventListener('change', (event) => uploadModel(knnClassifierModel,event));
       document.getElementById('save_button').addEventListener('click', async () => downloadModel(knnClassifierModel));
-  
+      document.getElementById('infer').addEventListener('click', async() => imageClassificationWithTransferLearningOnWebcam());
       document.getElementById('class-a').addEventListener('click', () => addDatasetClass(0));
       document.getElementById('class-b').addEventListener('click', () => addDatasetClass(1));
       document.getElementById('class-c').addEventListener('click', () => addDatasetClass(2));
@@ -426,7 +426,7 @@ async function imageClassificationWithImage() {
     };
     const imageClassificationWithTransferLearningOnWebcam = async () => {
       console.log("Machine Learning on the web is ready");
-      while (true) {
+      //while (true) {
         if (knnClassifierModel.getNumClasses() > 0) {
           const img = await webcamInput.capture();
   
@@ -444,12 +444,12 @@ async function imageClassificationWithImage() {
           // Dispose the tensor to release the memory.
           img.dispose();
         }
-        await tf.nextFrame();
-      }
+        //await tf.nextFrame();
+      //}
     };
   
     await initializeElements();
-    await imageClassificationWithTransferLearningOnWebcam();
+    //await imageClassificationWithTransferLearningOnWebcam();
   };
 
   window.onload = () => {
