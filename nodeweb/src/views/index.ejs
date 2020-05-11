@@ -33,6 +33,21 @@
         <br>
         <br>
     </div>
+    <div class="wrapper">
+        <h1>Supervised Learning Test</h1>
+
+    <div id="console"></div>
+    <!-- Add an image that we will use to test -->
+    <!--<img id="img" crossorigin src="https://i.imgur.com/Fi4j15h.jpg" width="227" height="227"/>-->
+        <video autoplay playsinline muted id="webcam" width="224" height="224"></video>
+        <button id="class-a">Add A</button>
+        <button id="class-b">Add B</button>
+        <button id="class-c">Add C</button>
+        <button id="save_button">Save</button>
+        <!--<button id="load_button">Load</button>-->
+        <input id="load_button" type='file' accept='.json'>
+        <img id='output'>
+    </div>
 
     <!-- Nlp -->
     <script src="https://unpkg.com/compromise@latest/builds/compromise.min.js"></script>
@@ -42,6 +57,11 @@
 
     <!-- Client -->
     <script src="assets/js/client.js"></script>
+
+    <!-- TensorflowJS Model -->
+    <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+    <script src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
+    <script src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
 </body>
 
 </html>
