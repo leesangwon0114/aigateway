@@ -40,6 +40,10 @@
     <!-- Add an image that we will use to test -->
     <!--<img id="img" crossorigin src="https://i.imgur.com/Fi4j15h.jpg" width="227" height="227"/>-->
         <video autoplay playsinline muted id="webcam" width="224" height="224"></video>
+        <canvas id="capture" width="224" height="224"></canvas>
+    </div>
+
+    <div id="console"></div>
         <button id="class-a">Add A</button>
         <button id="class-b">Add B</button>
         <button id="class-c">Add C</button>
@@ -63,6 +67,9 @@
     <script src="assets/js/tf.min.js"></script>
     <script src="assets/js/mobilenet.min.js"></script>
     <script src="assets/js/knn-classifier.min.js"></script>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
 </body>
 
 </html>

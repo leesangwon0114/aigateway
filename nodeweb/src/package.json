@@ -15,6 +15,10 @@
     "express": "^4.16.2",
     "grpc": "^1.24.2",
     "path": "^0.12.7",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.0.4",
+    "@tensorflow-models/mobilenet": "^0.2.2",
+    "@tensorflow/tfjs": "^0.12.3",
+    "@tensorflow/tfjs-node": "^0.1.9",
+    "jpeg-js": "^0.3.4"
   }
 }

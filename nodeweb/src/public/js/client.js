@@ -345,7 +345,7 @@ async function imageClassificationWithImage() {
       return await tf.data.webcam(webcamElement);
     };
   
-    const mobilenetModel = await createMobileNetModel();
+    //const mobilenetModel = await createMobileNetModel();
     const knnClassifierModel = await createKNNClassifier();
     const webcamInput = await createWebcamInput();
   
@@ -408,41 +408,67 @@ async function imageClassificationWithImage() {
         output.src = dataURL;
       };
       reader.readAsDataURL(input.files[0]);
-    };
+	};
+	
+	function json2array(json){
+		var result = [];
+		var keys = Object.keys(json);
+		keys.forEach(function(key){
+			result.push(json[key]);
+		});
+		return result;
+	}
   
     const addDatasetClass = async (classId) => {
       // Capture an image from the web camera.
-      const img = await webcamInput.capture();
-  
+	  //const img = await webcamInput.capture();
+	  var video = document.getElementById("webcam");
+	  var canvas = document.getElementById("capture");
+	  var ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0,0,224, 224);
       // Get the intermediate activation of MobileNet 'conv_preds' and pass that
-      // to the KNN classifier.
-      const activation = mobilenetModel.infer(img, 'conv_preds');
+	  // to the KNN classifier.
+	  
+	  $.post( "http://localhost:1337/upload", { img: canvas.toDataURL('image/jpeg')})
+		.done(function( data ) {
+			var activation = tf.tensor(json2array(data["success"]));
+			knnClassifierModel.addExample(activation, classId);
+			activation.dispose();
+		});
+      //const activation = mobilenetModel.infer(img, 'conv_preds');
   
       // Pass the intermediate activation to the classifier.
-      knnClassifierModel.addExample(activation, classId);
+      //knnClassifierModel.addExample(activation, classId);
   
       // Dispose the tensor to release the memory.
-      img.dispose();
+      //img.dispose();
     };
     const imageClassificationWithTransferLearningOnWebcam = async () => {
       console.log("Machine Learning on the web is ready");
       //while (true) {
         if (knnClassifierModel.getNumClasses() > 0) {
           const img = await webcamInput.capture();
-  
-          // Get the activation from mobilenet from the webcam.
-          const activation = mobilenetModel.infer(img, 'conv_preds');
-          // Get the most likely class and confidences from the classifier module.
-          const result = await knnClassifierModel.predictClass(activation);
-  
-          const classes = ['A', 'B', 'C'];
-          document.getElementById('console').innerText = `
-          prediction: ${classes[result.label]}\n
-          probability: ${result.confidences[result.label]}
-        `;
-  
-          // Dispose the tensor to release the memory.
-          img.dispose();
+		  var video = document.getElementById("webcam");
+		  var canvas = document.getElementById("capture");
+		  var ctx = canvas.getContext("2d");
+		  ctx.drawImage(video, 0,0,224, 224);
+		  // Get the intermediate activation of MobileNet 'conv_preds' and pass that
+		  // to the KNN classifier.
+		  
+		  $.post( "http://localhost:1337/upload", { img: canvas.toDataURL('image/jpeg')})
+			.done(function( data ) {
+				var activation = tf.tensor(json2array(data["success"]));
+				knnClassifierModel.predictClass(activation)
+				.then(result => {
+					const classes = ['A', 'B', 'C'];
+					document.getElementById('console').innerText = `
+					prediction: ${classes[result.label]}\n
+					probability: ${result.confidences[result.label]}
+					`;
+				});
+				activation.dispose();
+			});
+
         }
         //await tf.nextFrame();
       //}

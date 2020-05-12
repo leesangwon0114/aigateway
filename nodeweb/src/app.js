@@ -20,6 +20,16 @@ const port = process.env.PORT || 1337;
 const server = require('http').createServer(app);
 
 const io = require('socket.io')(server);
+var bodyParser = require('body-parser');
+const tf = require('@tensorflow/tfjs')
+const mobilenet = require('@tensorflow-models/mobilenet');
+require('@tensorflow/tfjs-node')
+const jpeg = require('jpeg-js');
+
+const NUMBER_OF_CHANNELS = 3
+
+app.use(bodyParser.json({limit: '16mb'}));
+app.use(bodyParser.urlencoded({limit: '16mb', extended: true}));
 
 app.use('/assets', express.static(__dirname + '/public'));
 app.use('/session/assets', express.static(__dirname + '/public'));
@@ -39,6 +49,57 @@ app.use('/', function (req, res, next) {
     next(); // console.log(`Request Url: ${req.url}`);
 });
 
+
+const readImage = path => {
+    const buf = fs.readFileSync(path)
+    const pixels = jpeg.decode(buf, true)
+    return pixels
+}
+  
+const imageByteArray = (image, numChannels) => {
+    const pixels = image
+    const numPixels = 224 * 224;
+    const values = new Int32Array(numPixels * numChannels);
+  
+    for (let i = 0; i < numPixels; i++) {
+      for (let channel = 0; channel < numChannels; ++channel) {
+        values[i * numChannels + channel] = pixels[i * 4 + channel];
+      }
+    }
+  
+    return values
+}
+  
+const imageToInput = (image, numChannels) => {
+    const values = imageByteArray(image, numChannels)
+    const outShape = [224, 224, numChannels];
+    const input = tf.tensor3d(values, outShape, 'int32');
+  
+    return input
+}
+  
+const loadModel = async () => {
+    return await mobilenet.load()
+}
+  
+const classify = async (img) => {
+    var base64Data  =   img.replace(/^data:image\/jpeg;base64,/, "");
+    var binaryData  =   new Buffer(base64Data, 'base64').toString('binary');
+
+    const input = imageToInput(binaryData, NUMBER_OF_CHANNELS)
+  
+    const mn_model = await loadModel()
+    const predictions = await mn_model.infer(input, 'conv_pred')
+    return predictions.dataSync()
+}
+
+app.post('/upload', function (req, res) {
+    console.log('uploaded')
+    classify(req.body['img'])
+    .then(data => {
+        res.send({success: data});
+    });
+});
 
 // =========================== SOCKET.IO ================================ //
 
