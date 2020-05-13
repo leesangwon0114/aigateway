@@ -82,15 +82,27 @@ const loadModel = async () => {
     return await mobilenet.load()
 }
   
-const classify = async (img) => {
-    var base64Data  =   img.replace(/^data:image\/jpeg;base64,/, "");
-    var binaryData  =   new Buffer(base64Data, 'base64').toString('binary');
+function json2array(json){
+    var result = [];
+    var keys = Object.keys(json);
+    keys.forEach(function(key){
+        result.push(json[key]);
+    });
+    return result;
+}
 
-    const input = imageToInput(binaryData, NUMBER_OF_CHANNELS)
+const classify = async (img) => {
+    //var base64Data  =   img.replace(/^data:image\/jpeg;base64,/, "");
+    //var binaryData  =   new Buffer(base64Data, 'base64').toString('binary');
+
+    //const input = imageToInput(binaryData, NUMBER_OF_CHANNELS)
+    const webinput = JSON.parse(img);
+    const outShape = [224, 224, 3];
+    const input = tf.tensor3d(json2array(webinput), outShape, 'int32');
   
-    const mn_model = await loadModel()
-    const predictions = await mn_model.infer(input, 'conv_pred')
-    return predictions.dataSync()
+    const mn_model = await loadModel();
+    const predictions = await mn_model.infer(input, 'conv_pred');
+    return predictions.dataSync();
 }
 
 app.post('/upload', function (req, res) {

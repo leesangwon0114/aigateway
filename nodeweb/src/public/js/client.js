@@ -421,18 +421,20 @@ async function imageClassificationWithImage() {
   
     const addDatasetClass = async (classId) => {
       // Capture an image from the web camera.
-	  //const img = await webcamInput.capture();
-	  var video = document.getElementById("webcam");
-	  var canvas = document.getElementById("capture");
-	  var ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0,0,224, 224);
+	  const img = await webcamInput.capture();
+	  //var video = document.getElementById("webcam");
+	  //var canvas = document.getElementById("capture");
+	  //var ctx = canvas.getContext("2d");
+      //ctx.drawImage(video, 0,0,224, 224);
       // Get the intermediate activation of MobileNet 'conv_preds' and pass that
 	  // to the KNN classifier.
 	  
-	  $.post( "http://localhost:1337/upload", { img: canvas.toDataURL('image/jpeg')})
+	  $.post( "http://localhost:1337/upload", { img: JSON.stringify(img.dataSync()) })//canvas.toDataURL('image/jpeg')})
 		.done(function( data ) {
+			console.log('adddatasample')
 			var activation = tf.tensor(json2array(data["success"]));
 			knnClassifierModel.addExample(activation, classId);
+			console.log(classId);
 			activation.dispose();
 		});
       //const activation = mobilenetModel.infer(img, 'conv_preds');
@@ -448,19 +450,19 @@ async function imageClassificationWithImage() {
       //while (true) {
         if (knnClassifierModel.getNumClasses() > 0) {
           const img = await webcamInput.capture();
-		  var video = document.getElementById("webcam");
-		  var canvas = document.getElementById("capture");
-		  var ctx = canvas.getContext("2d");
-		  ctx.drawImage(video, 0,0,224, 224);
+		  //var video = document.getElementById("webcam");
+		  //var canvas = document.getElementById("capture");
+		  //var ctx = canvas.getContext("2d");
+		  //ctx.drawImage(video, 0,0,224, 224);
 		  // Get the intermediate activation of MobileNet 'conv_preds' and pass that
 		  // to the KNN classifier.
 		  
-		  $.post( "http://localhost:1337/upload", { img: canvas.toDataURL('image/jpeg')})
+		  $.post( "http://localhost:1337/upload", { img: JSON.stringify(img.dataSync()) })
 			.done(function( data ) {
 				var activation = tf.tensor(json2array(data["success"]));
 				knnClassifierModel.predictClass(activation)
 				.then(result => {
-					const classes = ['A', 'B', 'C'];
+					const classes = [document.getElementById("c1").value, document.getElementById("c2").value, document.getElementById("c3").value];
 					document.getElementById('console').innerText = `
 					prediction: ${classes[result.label]}\n
 					probability: ${result.confidences[result.label]}
@@ -468,7 +470,7 @@ async function imageClassificationWithImage() {
 				});
 				activation.dispose();
 			});
-
+			await tf.nextFrame();
         }
         //await tf.nextFrame();
       //}
