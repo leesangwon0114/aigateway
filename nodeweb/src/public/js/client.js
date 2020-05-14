@@ -361,8 +361,8 @@ async function imageClassificationWithImage() {
     const saveClassifier = async (classifierModel) => {
       let datasets = await classifierModel.getClassifierDataset();
       let datasetObject = {};
-      Object.keys(datasets).forEach(async (key) => {
-        let data = await datasets[key].dataSync();
+      Object.keys(datasets).forEach((key) => {
+        let data = datasets[key].dataSync();
         datasetObject[key] = Array.from(data);
       });
       let jsonModel = JSON.stringify(datasetObject);
@@ -420,6 +420,20 @@ async function imageClassificationWithImage() {
 	}
   
     const addDatasetClass = async (classId) => {
+      var label = null;
+	  if (classId==0) {
+		label = document.getElementById("c1").value;
+	  }
+	  else if (classId==1) {
+		label = document.getElementById("c2").value;
+	  }
+	  else if (classId==2) {
+		label = document.getElementById("c3").value;
+	  }
+	  if (label == '') {
+		  console.log('put label');
+		  return;
+	  }
       // Capture an image from the web camera.
 	  const img = await webcamInput.capture();
 	  //var video = document.getElementById("webcam");
@@ -433,7 +447,7 @@ async function imageClassificationWithImage() {
 		.done(function( data ) {
 			//console.log('adddatasample')
 			var activation = tf.tensor(json2array(data["success"]));
-			knnClassifierModel.addExample(activation, classId);
+			knnClassifierModel.addExample(activation, label);
 			//console.log(classId);
 			activation.dispose();
 		});
@@ -462,9 +476,9 @@ async function imageClassificationWithImage() {
 				var activation = tf.tensor(json2array(data["success"]));
 				knnClassifierModel.predictClass(activation)
 				.then(result => {
-					const classes = [document.getElementById("c1").value, document.getElementById("c2").value, document.getElementById("c3").value];
+					//const classes = [document.getElementById("c1").value, document.getElementById("c2").value, document.getElementById("c3").value];
 					document.getElementById('console').innerText = `
-					prediction: ${classes[result.label]}\n
+					prediction: ${result.label}\n
 					probability: ${result.confidences[result.label]}
 					`;
 				});
